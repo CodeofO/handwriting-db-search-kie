@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset=utf-8><style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Nanum+Pen+Script&family=Caveat:wght@500&family=JetBrains+Mono:wght@400;600&display=block');
+*{box-sizing:border-box}
+body{margin:0;background:#fff;font-family:'Noto Sans KR',sans-serif;color:#111111;-webkit-font-smoothing:antialiased}
+.fig{width:1600px;padding:44px 52px}
+.t{font-size:30px;font-weight:700;margin:0 0 8px;letter-spacing:-.01em}
+.s{font-size:18px;color:#52514e;margin:0 0 30px}
+.hw{font-family:'Nanum Pen Script','Caveat',cursive;color:#1d2a5b;line-height:1}
+.hwl{font-family:'Caveat',cursive;color:#1d2a5b;line-height:1}
+.field{display:inline-flex;align-items:center;border:1.5px solid #d6d5cf;background:#fcfcf9;border-radius:6px;padding:6px 18px 2px;height:64px}
+.lab{font-size:14px;color:#8a8985;margin-bottom:6px}
+.card{border:1px solid #e7e6e2;border-radius:14px;padding:22px 24px;background:#fff}
+.tag{font-size:14px;font-weight:700;letter-spacing:.03em;color:#8a8985;margin-bottom:6px}
+.h{font-size:21px;font-weight:700;margin:0 0 14px}
+.mono{font-family:'JetBrains Mono',monospace}
+.bad{color:#e34948} .good{color:#008300} .blue{color:#2a78d6}
+.note{font-size:15px;color:#52514e;line-height:1.55}
+.chip{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:16px;background:#f7f7f5;border:1px solid #e7e6e2;border-radius:8px;padding:6px 12px}
+.arrow{color:#8a8985;font-size:26px;text-align:center}
+table.db{border-collapse:collapse;width:100%;font-size:15px}
+table.db td{padding:7px 8px;border-bottom:1px solid #e7e6e2}
+table.db tr.hit td{background:#e8f1fb;font-weight:700}
+.legend{display:flex;gap:22px;font-size:15px;color:#52514e;align-items:center}
+.sw{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:7px;vertical-align:-2px}
+ body{height:640px;overflow:hidden}</style></head><body><div class=fig><div class=t>위치 정렬 레코드 검색 모델</div><div class=s>가중치 하나로 검색 → 정밀 비교 → 수락 판정. 학습 = 대칭 InfoNCE + 어려운 음성(한 글자 · 한 토큰 · 한 칼럼만 다른 가짜 레코드) 재채점 + CTC + 수락 판정</div><div style='display:grid;grid-template-columns:1010px 50px 1fr;align-items:center'><div style='display:flex;flex-direction:column;gap:26px'><div style='display:grid;grid-template-columns:320px 40px 300px 40px 270px;align-items:center'><div><div class=lab>칼럼 이미지 묶음 (칼럼 수 · 누락 무관)</div><div style='display:flex;flex-direction:column;gap:6px'><div class=field style='height:40px;padding:2px 12px;width:120px'><span class=hw style='font-size:30px'>김하늘</span></div><div class=field style='height:40px;padding:2px 12px;width:140px'><span class=hw style='font-size:30px'>960314</span></div><div class=field style='height:40px;padding:2px 12px;width:300px'><span class=hw style='font-size:30px'>서울특별시 마포구 하늘길 27</span></div></div></div><div class=arrow>→</div><div class=card style='padding:16px 18px;'><div style='font-size:18px;font-weight:700;margin-bottom:6px'>이미지 인코더</div><div class=note style='font-size:14.5px'>64×1280 칼럼 이미지 → 열 토큰 320개. 세로를 평균하지 않고 8줄을 채널로 접어 작은 획을 보존</div></div><div class=arrow>→</div><div class=card style='padding:16px 18px;border-color:#2a78d6;background:#f3f8fe'><div style='font-size:18px;font-weight:700;margin-bottom:6px'>공용 쿼리 16개</div><div class=note style='font-size:14.5px'>칼럼을 지정하지 않는 쿼리가 역할을 스스로 나눔 → 1,024차원 벡터</div></div></div><div style='display:grid;grid-template-columns:320px 40px 300px 40px 270px;align-items:center'><div><div class=lab>DB 레코드 (미리 벡터로 변환)</div><div class=chip style='font-size:14px;line-height:1.6'>김하늘␞960314␞<br>서울특별시 마포구 하늘길 27</div></div><div class=arrow>→</div><div class=card style='padding:16px 18px;'><div style='font-size:18px;font-weight:700;margin-bottom:6px'>텍스트 인코더</div><div class=note style='font-size:14.5px'>한글 = 초·중·종성 자모, 그 밖 = 글자. 토큰마다 칼럼 번호 · 글자 순번 · 자모 역할</div></div><div class=arrow>→</div><div class=card style='padding:16px 18px;border-color:#2a78d6;background:#f3f8fe'><div style='font-size:18px;font-weight:700;margin-bottom:6px'>공용 쿼리 16개</div><div class=note style='font-size:14.5px'>같은 구조 · 같은 1,024차원 공간 — 검색 = 내적 1번</div></div></div></div><div class=arrow style='font-size:34px'>⟶</div><div style='display:flex;flex-direction:column;gap:10px'><div class=card style='padding:16px 18px;'><div style='font-size:18px;font-weight:700;margin-bottom:6px'>① 벡터 검색</div><div class=note style='font-size:14.5px'>DB 전체와 행렬곱 1번 → 상위 K 후보</div></div><div class=arrow>↓</div><div class=card style='padding:16px 18px;'><div style='font-size:18px;font-weight:700;margin-bottom:6px'>② 위치 정렬 재채점</div><div class=note style='font-size:14.5px'>텍스트 토큰은 그 칼럼의 예상 위치 근처 열 토큰하고만 비교 + 글자 검증(CTC) 점수</div></div><div class=arrow>↓</div><div class=card style='padding:16px 18px;border-color:#2a78d6;background:#f3f8fe'><div style='font-size:18px;font-weight:700;margin-bottom:6px'>③ 칼럼별 수락 판정</div><div class=note style='font-size:14.5px'>한 칼럼만 틀린 후보를 잡아 거부 → 자동 처리 / 사람 확인</div></div></div></div></div></body></html>

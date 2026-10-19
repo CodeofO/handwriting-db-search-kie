@@ -1,0 +1,149 @@
+# PP-OCRv5 rec 파인튜닝 기준 설정(템플릿). 공식 PaddleOCR configs/rec/PP-OCRv5/multi_language/korean_PP-OCRv5_mobile_rec.yml에서
+# 폭 960 · 최대 40자 · GPU당 48 · 학습률 1.5e-4(= 1e-4 × 4 × 48 / 128) · 20에폭 · 에폭마다 저장 · RecConAug 끔으로 바꾼 것.
+# 경로는 작업 공간 상대이며 formrec.baselines.ppocr.ft_data가 데이터셋별로 모두 덮어쓴다(ft/{ds}/ppocr/*.yml 생성).
+Global:
+  model_name: korean_PP-OCRv5_mobile_rec
+  debug: false
+  use_gpu: true
+  epoch_num: 20
+  log_smooth_window: 20
+  print_batch_step: 50
+  save_model_dir: runs/kie/ppocrv5_ft
+  save_epoch_step: 1
+  eval_batch_step:
+  - 0
+  - 535
+  cal_metric_during_train: true
+  pretrained_model: models/korean_PP-OCRv5_mobile_rec/korean_PP-OCRv5_mobile_rec_pretrained
+  checkpoints: null
+  save_inference_dir: null
+  use_visualdl: false
+  infer_img: null
+  character_dict_path: ft/kie/ppocr/dict.txt
+  max_text_length: 40
+  infer_mode: false
+  use_space_char: true
+  distributed: true
+  save_res_path: runs/kie/ppocrv5_ft/predicts.txt
+  d2s_train_image_shape:
+  - 3
+  - 48
+  - 960
+Optimizer:
+  name: Adam
+  beta1: 0.9
+  beta2: 0.999
+  lr:
+    name: Cosine
+    learning_rate: 0.00015
+    warmup_epoch: 5
+  regularizer:
+    name: L2
+    factor: 3.0e-05
+Architecture:
+  model_type: rec
+  algorithm: SVTR_LCNet
+  Transform: null
+  Backbone:
+    name: PPLCNetV3
+    scale: 0.95
+  Head:
+    name: MultiHead
+    head_list:
+    - CTCHead:
+        Neck:
+          name: svtr
+          dims: 120
+          depth: 2
+          hidden_dims: 120
+          kernel_size:
+          - 1
+          - 3
+          use_guide: true
+        Head:
+          fc_decay: 1.0e-05
+    - NRTRHead:
+        nrtr_dim: 384
+        max_text_length: 40
+Loss:
+  name: MultiLoss
+  loss_config_list:
+  - CTCLoss: null
+  - NRTRLoss: null
+PostProcess:
+  name: CTCLabelDecode
+Metric:
+  name: RecMetric
+  main_indicator: acc
+  ignore_space: false
+Train:
+  dataset:
+    name: MultiScaleDataSet
+    ds_width: false
+    data_dir: ''
+    ext_op_transform_idx: 1
+    label_file_list:
+    - ft/kie/ppocr/train_list.txt
+    transforms:
+    - DecodeImage:
+        img_mode: BGR
+        channel_first: false
+    - RecAug: null
+    - MultiLabelEncode:
+        gtc_encode: NRTRLabelEncode
+    - KeepKeys:
+        keep_keys:
+        - image
+        - label_ctc
+        - label_gtc
+        - length
+        - valid_ratio
+  sampler:
+    name: MultiScaleSampler
+    scales:
+    - - 960
+      - 32
+    - - 960
+      - 48
+    - - 960
+      - 64
+    first_bs: 48
+    fix_bs: false
+    divided_factor:
+    - 8
+    - 16
+    is_training: true
+  loader:
+    shuffle: true
+    batch_size_per_card: 48
+    drop_last: true
+    num_workers: 4
+Eval:
+  dataset:
+    name: SimpleDataSet
+    data_dir: ''
+    label_file_list:
+    - ft/kie/ppocr/tune_list.txt
+    transforms:
+    - DecodeImage:
+        img_mode: BGR
+        channel_first: false
+    - MultiLabelEncode:
+        gtc_encode: NRTRLabelEncode
+    - RecResizeImg:
+        image_shape:
+        - 3
+        - 48
+        - 960
+    - KeepKeys:
+        keep_keys:
+        - image
+        - label_ctc
+        - label_gtc
+        - length
+        - valid_ratio
+  loader:
+    shuffle: false
+    drop_last: false
+    batch_size_per_card: 256
+    num_workers: 2

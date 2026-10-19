@@ -1,0 +1,19 @@
+# 작업 공간(데이터 · 캐시 · 가중치 · 결과)은 저장소에 넣지 않는다
+workspace/*
+!workspace/README.md
+# 비밀값
+.env
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+# 대용량 · 산출물
+*.pt
+*.pdparams
+*.safetensors
+*.npy
+*.blob
+*.parquet
+logs/
+runs/

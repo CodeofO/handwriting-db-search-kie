@@ -1,0 +1,54 @@
+# PaddleOCR-VL-1.6 전체 파인튜닝 기준 설정(템플릿). 공식 PaddleFormers examples/best_practices/PaddleOCR-VL-1.5/
+# paddleocr-vl-v15_full_16k_region_config.yaml에서 경로 · GPU 수 · 에폭 · 저장만 바꾼 것. 등록 파일 paddleocr_vl_v15_template.py는
+# 같은 폴더 region_ocr.md의 예시 코드(Apache-2.0). 경로는 작업 공간 상대이며 formrec.baselines.vlm.ft_data가 데이터셋별로 덮어쓴다.
+train_dataset_type: messages
+train_dataset_path: ft/kie/pvl/train.jsonl
+train_dataset_prob: '1.0'
+max_seq_len: 16384
+padding_free: true
+truncate_packing: false
+dataloader_num_workers: 4
+mix_strategy: concat
+template_backend: custom
+template: paddleocr_vl_v15
+custom_register_path: ft/kie/pvl/paddleocr_vl_v15_template.py
+model_name_or_path: models/PaddleOCR-VL-1.6
+_attn_implementation: flashmask
+copy_custom_file_list: configuration_paddleocr_vl.py image_processing_paddleocr_vl.py
+  modeling_paddleocr_vl.py processing_paddleocr_vl.py inference.yml
+stage: VL-SFT
+fine_tuning: full
+seed: 23
+do_train: true
+do_eval: false
+per_device_eval_batch_size: 32
+per_device_train_batch_size: 32
+num_train_epochs: 3
+max_steps: -1
+evaluation_strategy: 'no'
+save_strategy: epoch
+logging_steps: 10
+gradient_accumulation_steps: 1
+logging_dir: runs/kie/pvl_ft/vdl
+output_dir: runs/kie/pvl_ft
+disable_tqdm: true
+lr_scheduler_type: cosine
+warmup_ratio: 0.1
+learning_rate: 5.0e-06
+min_lr: 5.0e-07
+weight_decay: 0.1
+adam_epsilon: 1.0e-08
+adam_beta1: 0.9
+adam_beta2: 0.95
+tensor_model_parallel_size: 1
+pipeline_model_parallel_size: 1
+sharding: stage1
+recompute_granularity: full
+recompute_method: uniform
+recompute_num_layers: 1
+bf16: true
+fp16_opt_level: O2
+unified_checkpoint: true
+save_checkpoint_format: unified_checkpoint
+load_checkpoint_format: unified_checkpoint
+ignore_save_lr_and_optim: true
